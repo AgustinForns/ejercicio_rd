@@ -1,14 +1,13 @@
-from fastapi import HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter
 from config.database import Session
 from models.item import Item
 from schemas.item import ItemSchema
-
+from auth.auth import authentica_user
 
 router = APIRouter()
 
-
 @router.post("/input/{my_target_field}")
-async def create_item(my_target_field: str, item: ItemSchema):
+async def create_item(my_target_field: str, item: ItemSchema, _ = Depends(authentica_user)):
     allowed_fields = ["field_1", "author", "description"]
     
     if my_target_field not in allowed_fields:
@@ -30,7 +29,7 @@ async def create_item(my_target_field: str, item: ItemSchema):
 
 
 @router.get("/get_data/{id}", response_model=ItemSchema)
-async def get_item(id: int):
+async def get_item(id: int, _ = Depends(authentica_user)):
     db = Session()
     item = db.query(Item).filter(Item.id == id).first()
     db.close()
